@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <title>Panel de Control</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <!-- Solicita a los buscadores que no indexen esta página -->
+  <meta name="robots" content="noindex, nofollow, noarchive">
   <style>
     html, body {
       margin: 0;
@@ -15,6 +16,110 @@
       background-color: #ffffff;
     }
 
+    body.acceso-bloqueado {
+      overflow: hidden;
+    }
+
+    /* ===== BARRERA DE ACCESO ===== */
+
+    #barrera-acceso {
+      position: fixed;
+      inset: 0;
+      z-index: 999999;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      box-sizing: border-box;
+      padding: 24px;
+      background-color: #eef2f5;
+    }
+
+    #barrera-acceso.oculta {
+      display: none;
+    }
+
+    .caja-acceso {
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 420px;
+      padding: 32px;
+
+      background-color: #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 12px 40px rgba(23, 40, 60, 0.18);
+    }
+
+    .caja-acceso h2 {
+      margin: 0 0 12px;
+      color: #203040;
+      font-size: 1.7rem;
+    }
+
+    .caja-acceso p {
+      margin: 0 0 24px;
+      color: #586679;
+      line-height: 1.5;
+    }
+
+    .caja-acceso label {
+      display: block;
+      margin-bottom: 8px;
+      color: #203040;
+      font-weight: bold;
+    }
+
+    #clave-acceso {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 13px 14px;
+
+      border: 1px solid #aeb8c5;
+      border-radius: 7px;
+
+      font: inherit;
+      background-color: #ffffff;
+    }
+
+    #clave-acceso:focus {
+      border-color: #006c8c;
+      outline: 3px solid rgba(0, 108, 140, 0.18);
+    }
+
+    #formulario-acceso button {
+      box-sizing: border-box;
+      width: 100%;
+      margin-top: 16px;
+      padding: 13px 16px;
+
+      border: 0;
+      border-radius: 7px;
+
+      color: #ffffff;
+      background-color: #006c8c;
+
+      font: inherit;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #formulario-acceso button:hover {
+      background-color: #00536c;
+    }
+
+    #mensaje-error {
+      display: none;
+      box-sizing: border-box;
+      margin-top: 14px;
+      padding: 11px 13px;
+
+      border-radius: 7px;
+      color: #9b1c1c;
+      background-color: #fde8e8;
+
+      font-weight: bold;
+    }
     /* ===== ENCABEZADO ===== */
     header {
       position: fixed;
@@ -119,9 +224,41 @@
     }
   </style>
 </head>
+<body class="acceso-bloqueado">
 
-<body>
+  <!-- ===== BARRERA DE ACCESO ===== -->
 
+  <div id="barrera-acceso">
+    <div class="caja-acceso">
+      <h2>Acceso al informe</h2>
+
+      <p>
+        Introduzca la contraseña facilitada para consultar
+        el informe de seguimiento de la pila piloto.
+      </p>
+
+      <form id="formulario-acceso">
+        <label for="clave-acceso">Contraseña</label>
+
+        <input
+          id="clave-acceso"
+          name="clave"
+          type="password"
+          autocomplete="current-password"
+          required
+          autofocus
+        >
+
+        <button type="submit">Entrar</button>
+
+        <div id="mensaje-error" role="alert">
+          La contraseña introducida no es correcta.
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== CONTENIDO ORIGINAL ===== -->
   <header>
     <img src="assets/unex_logo.png" alt="Logo UNEX">
     <img src="assets/Imagen1.png" alt="Logo 1">
@@ -132,13 +269,71 @@
     src="https://datastudio.google.com/embed/reporting/2ebb8dd9-192f-4acd-9c2d-286a6f87c022/page/p_ddxkx85k4d" 
     allowfullscreen>
   </iframe>
-  
-  <script>
-    setTimeout(function () {
-      document.querySelector('header').classList.add('hidden');
-      document.body.classList.add('header-hidden');
-    }, 7000);
+    <script>
+
+   const CONTRASENA_INFORME = "MiClave2026";
+
+    const barreraAcceso =
+      document.getElementById("barrera-acceso");
+
+    const formularioAcceso =
+      document.getElementById("formulario-acceso");
+
+    const campoClave =
+      document.getElementById("clave-acceso");
+
+    const mensajeError =
+      document.getElementById("mensaje-error");
+
+    let temporizadorEncabezado = null;
+
+    function iniciarTemporizadorEncabezado() {
+      if (temporizadorEncabezado !== null) {
+        return;
+      }
+      temporizadorEncabezado = setTimeout(
+        function () {
+          document
+            .querySelector("header")
+            .classList
+            .add("hidden");
+
+          document
+            .body
+            .classList
+            .add("header-hidden");
+        },
+        7000
+      );
+    }
+
+    function desbloquearPagina() {
+      barreraAcceso.classList.add("oculta");
+
+      document
+        .body
+        .classList
+        .remove("acceso-bloqueado");
+
+      iniciarTemporizadorEncabezado();
+    }
+
+    formularioAcceso.addEventListener(
+      "submit",
+      function (evento) {
+        evento.preventDefault();
+
+        if (campoClave.value === CONTRASENA_INFORME) {
+          campoClave.value = "";
+          mensajeError.style.display = "none";
+
+          desbloquearPagina();
+        } else {
+          mensajeError.style.display = "block";
+          campoClave.select();
+        }
+      }
+    );
   </script>
-  
-</body>
+  </body>
 </html>
